@@ -48,6 +48,10 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 	--gives the ingot_item the ability to be placed and increas already placed stacks of ingots
 	minetest.override_item(ingot_item, {
 		on_place = function (itemstack, placer, pointed_thing)
+            local pos = minetest.get_pointed_thing_position(pointed_thing, true)
+            if minetest.is_protected(pos, placer:get_player_name()) and not minetest.check_player_privs(placer, "protection_bypass") then
+			    return
+		    end
 			if pointed_thing["type"] == "node" then
 				local name = minetest.get_node(pointed_thing.under).name
 				-- call on_rightclick function of pointed node if aplicable and not sneak
@@ -111,6 +115,9 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 					--checks, so that a stack can be taken appart only by hand or relevant ingot_item
 					if wield:get_name() == ingot_item or
 						wield:get_count() == 0 then
+                        if minetest.is_protected(pos, puncher:get_player_name()) and not minetest.check_player_privs(puncher, "protection_bypass") then
+			                return
+		                end
 						minetest.set_node(pos, {name = mod_prefix .. ingot_name .."_" .. i - 1, param2 = node.param2})
 						if not (creative and creative.is_enabled_for and creative.is_enabled_for(puncher:get_player_name())) then
 							local stack = ItemStack(ingot_item)
