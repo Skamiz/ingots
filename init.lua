@@ -17,6 +17,8 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ]]--
 
+ingots = {}
+
 local conf = dofile(minetest.get_modpath("ingots").."/conf.lua")
 dofile(minetest.get_modpath("ingots").."/api.lua")
 
@@ -48,7 +50,7 @@ if minetest.get_modpath("technic") then
 		ingots.register_ingots("technic:zinc_ingot", "ingot_zinc.png", conf.is_big)
 		ingots.register_ingots("technic:chromium_ingot", "ingot_chromium.png", conf.is_big)
 		ingots.register_ingots("technic:cast_iron_ingot", "ingot_cast_iron.png", conf.is_big)
-end 
+end
 
 if minetest.get_modpath("rainbow_ore") then
 		ingots.register_ingots("rainbow_ore:rainbow_ore_ingot", "ingot_rainbow_ore.png", conf.is_big)
