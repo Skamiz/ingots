@@ -55,3 +55,14 @@ end
 if minetest.get_modpath("rainbow_ore") then
 		ingots.register_ingots("rainbow_ore:rainbow_ore_ingot", "ingot_rainbow_ore.png", conf.is_big)
 end
+
+if minetest.get_modpath("mcl_core") then
+		ingots.register_ingots("mcl_core:iron_ingot", "ingot_steel.png", conf.is_big)
+		ingots.register_ingots("mcl_core:gold_ingot", "ingot_gold.png", conf.is_big)
+end
+if minetest.get_modpath("mcl_copper") then
+		ingots.register_ingots("mcl_copper:copper_ingot", "ingot_copper.png", conf.is_big)
+end
+if minetest.get_modpath("mcl_nether") then
+		ingots.register_ingots("mcl_nether:netherite_ingot", "ingot_netherite.png", conf.is_big)
+end

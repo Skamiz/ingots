@@ -1,3 +1,6 @@
+Version 1.6
+- support for iron, gold, copper, and netherite of mineclone
+
 Version 1.5
 -support for protections by NathanSalapat
 
