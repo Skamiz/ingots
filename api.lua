@@ -27,8 +27,9 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 	end
 
 	-- de hardcoded modname, which allows the api to be properly used from within other mods (thanks 'argyle')
-	local mod_name = minetest.get_current_modname()
-	local mod_prefix = mod_name .. ":"
+	local mod_current = minetest.get_current_modname()
+	local mod_target = ingot_item:split(":")[1]
+	local mod_prefix = "ingots:"
 
 	local stack_size = 64
 	local texture_prefix = "ingot_"
@@ -44,6 +45,10 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 
 	--this way there is no need for a separate on_punch function for a stack of 1 ingot
 	minetest.register_alias(mod_prefix .. ingot_name .."_0", "air")
+	if mod_current ~= "ingots" then
+		minetest.register_alias(mod_current .. ":" .. ingot_name .."_0", "air")
+	end
+	minetest.register_alias(mod_target  .. ":" .. ingot_name .."_0", "air")
 
 	--gives the ingot_item the ability to be placed and increas already placed stacks of ingots
 	minetest.override_item(ingot_item, {
@@ -98,7 +103,7 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 						ingots.get_box(is_big, i),
 					},
 				}
-		minetest.register_node(mod_prefix .. ingot_name .. "_" .. i,{
+		minetest.register_node(":" .. mod_prefix .. ingot_name .. "_" .. i,{
 			description = "ingots",
 			drawtype = "mesh",
 			tiles = {texture},
@@ -129,6 +134,10 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 			_ingot_name = ingot_name,
 			_ingot_count = i,
 		})
+		if mod_current ~= "ingots" then
+			minetest.register_alias(mod_current .. ":" .. ingot_name .. "_" .. i, mod_prefix .. ingot_name .. "_" .. i )
+		end
+		minetest.register_alias(mod_target  .. ":" .. ingot_name .. "_" .. i, mod_prefix .. ingot_name .. "_" .. i )
 	end
 end
 
