@@ -15,10 +15,12 @@
 	You should have received a copy of the GNU Lesser General Public
 	License along with this library; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+	TODO: add tooltip to ingot item description indicating that they can be placed
 ]]--
 
 -- ingot_item 	- The item which will be consumed to place an ingot. ex.: "default:steel_ingot"
--- texture 	- Name of texture used on ingot mesh. ex.: "ingot_steel.png"
+-- texture 		- Name of texture used on ingot mesh. ex.: "ingot_steel.png"
 -- is_big*		- Boolean which determines which ingot variant will be used.
 -- node_name*	- Set node name explicity, instead of deriving it from the ingot_item.
 -- mod_name*	- Attributes new nodes to a different mod.
@@ -57,44 +59,28 @@ function ingots.register_ingots(ingot_item, texture, is_big, node_name_override,
 	--gives the ingot_item the ability to be placed and increase already placed stacks of ingots
 	minetest.override_item(ingot_item, {
 		on_place = function (itemstack, placer, pointed_thing)
-            local pos = minetest.get_pointed_thing_position(pointed_thing, true)
-            if minetest.is_protected(pos, placer:get_player_name()) and not minetest.check_player_privs(placer, "protection_bypass") then
+			local player_name = placer:get_player_name()
+            local pos = pointed_thing.above
+            if minetest.is_protected(pos, player_name) then
 			    return
 		    end
-			if pointed_thing["type"] == "node" then
-				local name = minetest.get_node(pointed_thing.under).name
-				-- call on_rightclick function of pointed node if aplicable and not sneak
-				-- might or might not break if item is placed by mod devices
-				if minetest.registered_nodes[name].on_rightclick and
-					not placer:get_player_control().sneak
-				then
-					minetest.registered_nodes[name].on_rightclick(pointed_thing.under,
-						minetest.get_node(pointed_thing.under),
-						placer,
-						itemstack)
-				elseif string.find(name, node_name) then
-					local count = string.gsub(name, "%D*", "")
-					if stack_size > minetest.registered_nodes[minetest.get_node(pointed_thing.under).name]._ingot_count then
-						minetest.set_node(pointed_thing.under, {name = node_name .. count + 1, param2 = minetest.get_node(pointed_thing.under).param2})
-						if not (creative and creative.is_enabled_for and creative.is_enabled_for(placer:get_player_name())) then
-							itemstack:take_item()
-						end
-					elseif minetest.get_node(pointed_thing.above).name == "air" then
-						minetest.set_node(pointed_thing.above, {name = node_name .."1"})
-						if not (creative and creative.is_enabled_for and creative.is_enabled_for(placer:get_player_name())) then
-							itemstack:take_item()
-						end
-					end
+			local under_node = minetest.get_node(pointed_thing.under)
+			local under_name = under_node.name
+			local under_def = minetest.registered_nodes[under_name]
 
-				elseif minetest.get_node(pointed_thing.above).name == "air" then
-					minetest.set_node(pointed_thing.above, {name = node_name .."1"})
-					if not (creative and creative.is_enabled_for and creative.is_enabled_for(placer:get_player_name())) then
-						itemstack:take_item()
-					end
+			if under_def._ingot_count and under_def._ingot_count < stack_size then
+				minetest.set_node(pointed_thing.under, {name = node_name .. under_def._ingot_count + 1, param2 = under_node.param2})
+				if not minetest.is_creative_enabled(player_name) then
+					itemstack:take_item()
 				end
-
-				return itemstack
+			else
+				local _, pos = minetest.item_place(ItemStack(node_name .. "1"), placer, pointed_thing)
+				if pos and not minetest.is_creative_enabled(player_name)then
+					itemstack:take_item()
+				end
 			end
+
+			return itemstack
 		end
 	})
 
@@ -119,23 +105,23 @@ function ingots.register_ingots(ingot_item, texture, is_big, node_name_override,
 			groups = {cracky = 3, level = 2, not_in_creative_inventory = 1},
 			drop = ingot_item .. " " .. i,
 			on_punch = function (pos, node, puncher, pointed_thing)
-				if puncher then
-					local wield = puncher:get_wielded_item()
-					--checks, so that a stack can be taken appart only by hand or relevant ingot_item
-					if wield:get_name() == ingot_item or
-						wield:get_count() == 0 then
-                        if minetest.is_protected(pos, puncher:get_player_name()) and not minetest.check_player_privs(puncher, "protection_bypass") then
-			                return
-		                end
-						minetest.set_node(pos, {name = node_name .. i - 1, param2 = node.param2})
-						if not (creative and creative.is_enabled_for and creative.is_enabled_for(puncher:get_player_name())) then
-							local stack = ItemStack(ingot_item)
-							puncher:get_inventory():add_item("main", stack)
-						end
+				if not puncher then return end
+				local player_name = puncher:get_player_name()
+				local wield = puncher:get_wielded_item()
+
+				if minetest.is_protected(pos, player_name)) then
+					return
+				end
+
+				--checks, so that a stack can be taken appart only by hand or relevant ingot_item
+				if wield:get_name() == ingot_item or wield:get_count() == 0 then
+					minetest.set_node(pos, {name = node_name .. i - 1, param2 = node.param2})
+					if not minetest.is_creative_enabled(player_name) then
+						local stack = ItemStack(ingot_item)
+						puncher:get_inventory():add_item("main", stack)
 					end
 				end
 			end,
-			_ingot_name = ingot_name,
 			_ingot_count = i,
 		})
 	end
@@ -143,8 +129,10 @@ end
 
 --returns an apropriate nodebox for a given number of ingots
 function ingots.get_box(is_big, i)
-	if is_big then return {-0.5, -0.5, -0.5, 0.5, (((i + 1 - ((i +1 )%2)) / 8) - 0.5), 0.5}
-	else return {-0.5, -0.5, -0.5, 0.5, (((i - 1 - ((i-1)%8)) / 8) - 3) / 8, 0.5}
+	if is_big then
+		return {-0.5, -0.5, -0.5, 0.5, (((i + 1 - ((i +1 )%2)) / 8) - 0.5), 0.5}
+	else
+		return {-0.5, -0.5, -0.5, 0.5, (((i - 1 - ((i-1)%8)) / 8) - 3) / 8, 0.5}
 	end
 end
 
