@@ -1,0 +1,11 @@
+# Large Ingots
+#
+# When enabled placed ingots are much larger.
+# If you want to change this in an existing world you have to pick up all placed ingots first or they will be lost.
+ingots_large (Large Ingots) bool false
+
+# Compatibility Content
+#
+# By default this mod tries to register placable ingots for several mods.
+# Disable this to turn the mod into a pure API.
+ingots_content (Compatibility Content) bool true

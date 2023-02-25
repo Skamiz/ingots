@@ -19,6 +19,9 @@
 
 -- takes an item name and a texture name and a boolean whether the ingots are big
 function ingots.register_ingots(ingot_item, texture, is_big)
+	if is_big == nil then
+		is_big = ingots.large
+	end
 
 	--checks, whether the item name is a valid item (thanks 'puzzlecube')
 	if not minetest.registered_items[ingot_item] then
@@ -31,7 +34,7 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 	local mod_prefix = mod_name .. ":"
 
 	local stack_size = 64
-	local texture_prefix = "ingot_"
+	local mesh_prefix = "ingot_"
 	--gets item name witout mod part, to be used in the deffinition of the new nodes
 	local ingot_name = string.sub(ingot_item, string.find(ingot_item, ":", 1, true) +1, -1)
 
@@ -39,7 +42,7 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 	if is_big then
 		ingot_name = ingot_name .. "_big"
 		stack_size = 8
-		texture_prefix = "ingot_big_"
+		mesh_prefix = "ingot_big_"
 	end
 
 	--this way there is no need for a separate on_punch function for a stack of 1 ingot
@@ -102,10 +105,10 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 			description = "ingots",
 			drawtype = "mesh",
 			tiles = {texture},
-			mesh = texture_prefix .. i .. ".obj",
+			mesh = mesh_prefix .. i .. ".obj",
 			selection_box = box,
 			collision_box = box,
-			paramtype = 'light',
+			paramtype = "light",
 			paramtype2 = "facedir",
 			groups = {cracky = 3, level = 2, not_in_creative_inventory = 1},
 			drop = ingot_item .. " " .. i,

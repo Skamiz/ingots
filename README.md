@@ -2,10 +2,15 @@ Ingots
 ======
 A small mod that makes it possible to place ore ingots in the world.
 
-Options
+Settings
 =======
-Toggle 'is_big' in conf.lua to make ingots apear bigger.
-You can make an individual per ingot type choice in init.lua
+Large Ingots
+	- makes placed ingot appear much larger
+	- shouldn't be changed after ingots have been placed down or they will be lost
+Compatibility Content
+	- automatically try to register placebel ingots for several mods
+	- disable if you want to use the API without the content
+
 
 API
 ===
