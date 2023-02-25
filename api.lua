@@ -141,3 +141,12 @@ function ingots.get_box(is_big, i)
 	else return {-0.5, -0.5, -0.5, 0.5, (((i - 1 - ((i-1)%8)) / 8) - 3) / 8, 0.5}
 	end
 end
+
+function ingots.register_alias(old_name, new_name)
+	for i = 1, 64 do
+		minetest.register_alias(old_name .. "_" .. i, new_name  .. "_" .. i)
+	end
+	for i = 1, 8 do
+		minetest.register_alias(old_name .. "_big_" .. i, new_name  .. "_big_" .. i)
+	end
+end

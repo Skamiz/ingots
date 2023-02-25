@@ -19,3 +19,9 @@ Call "ingots.register_ingots(ingot_item, texture, is_big)"
 ingot_item 	- The item which will be consumed to place an ingot. ex.: "default:steel_ingot"
 texture 	- Name of texture used on ingot mesh. ex.: "ingot_steel.png"
 is_big 		- Boolean which determines which ingot variant will be used.
+
+If you changed the item name, or maybe the mod from which you are registering ingots
+use this to preserve compatibility with old worlds.
+"ingots.register_alias(old_name, new_name)"
+
+example: 'ingots.register_alias(moreores:tin_ingot, default:tin_ingot)'
