@@ -17,27 +17,30 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ]]--
 
--- takes an item name and a texture name and a boolean whether the ingots are big
-function ingots.register_ingots(ingot_item, texture, is_big)
-	if is_big == nil then
-		is_big = ingots.large
-	end
-
+-- ingot_item 	- The item which will be consumed to place an ingot. ex.: "default:steel_ingot"
+-- texture 	- Name of texture used on ingot mesh. ex.: "ingot_steel.png"
+-- is_big*		- Boolean which determines which ingot variant will be used.
+-- node_name*	- Set node name explicity, instead of deriving it from the ingot_item.
+-- mod_name*	- Attributes new nodes to a different mod.
+function ingots.register_ingots(ingot_item, texture, is_big, node_name_override, mod_name_override)
 	--checks, whether the item name is a valid item (thanks 'puzzlecube')
 	if not minetest.registered_items[ingot_item] then
 		minetest.log("warning", ingot_item.." is not registered. Skipping ingot registration")
 		return
 	end
 
+	-- if not set explicitly use global mod setting
+	if is_big == nil then
+		is_big = ingots.large
+	end
+
 	-- de hardcoded modname, which allows the api to be properly used from within other mods (thanks 'argyle')
-	local mod_name = minetest.get_current_modname()
-	local mod_prefix = mod_name .. ":"
+	local mod_name = mod_name_override or minetest.get_current_modname()
+	--gets item name witout mod part, to be used in the definition of the new nodes
+	local ingot_name = node_name_override or ingot_item:match(":(.+)$")
 
 	local stack_size = 64
 	local mesh_prefix = "ingot_"
-	--gets item name witout mod part, to be used in the deffinition of the new nodes
-	local ingot_name = string.sub(ingot_item, string.find(ingot_item, ":", 1, true) +1, -1)
-
 
 	if is_big then
 		ingot_name = ingot_name .. "_big"
@@ -45,10 +48,13 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 		mesh_prefix = "ingot_big_"
 	end
 
-	--this way there is no need for a separate on_punch function for a stack of 1 ingot
-	minetest.register_alias(mod_prefix .. ingot_name .."_0", "air")
+	local node_name = mod_name .. ":" .. ingot_name .. "_"
 
-	--gives the ingot_item the ability to be placed and increas already placed stacks of ingots
+
+	--this way there is no need for a separate on_punch function for a stack of 1 ingot
+	minetest.register_alias(node_name .."0", "air")
+
+	--gives the ingot_item the ability to be placed and increase already placed stacks of ingots
 	minetest.override_item(ingot_item, {
 		on_place = function (itemstack, placer, pointed_thing)
             local pos = minetest.get_pointed_thing_position(pointed_thing, true)
@@ -66,22 +72,22 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 						minetest.get_node(pointed_thing.under),
 						placer,
 						itemstack)
-				elseif string.find(name, mod_prefix .. ingot_name) then
+				elseif string.find(name, node_name) then
 					local count = string.gsub(name, "%D*", "")
 					if stack_size > minetest.registered_nodes[minetest.get_node(pointed_thing.under).name]._ingot_count then
-						minetest.set_node(pointed_thing.under, {name = mod_prefix .. ingot_name .."_" .. count + 1, param2 = minetest.get_node(pointed_thing.under).param2})
+						minetest.set_node(pointed_thing.under, {name = node_name .. count + 1, param2 = minetest.get_node(pointed_thing.under).param2})
 						if not (creative and creative.is_enabled_for and creative.is_enabled_for(placer:get_player_name())) then
 							itemstack:take_item()
 						end
 					elseif minetest.get_node(pointed_thing.above).name == "air" then
-						minetest.set_node(pointed_thing.above, {name = mod_prefix .. ingot_name .."_1"})
+						minetest.set_node(pointed_thing.above, {name = node_name .."1"})
 						if not (creative and creative.is_enabled_for and creative.is_enabled_for(placer:get_player_name())) then
 							itemstack:take_item()
 						end
 					end
 
 				elseif minetest.get_node(pointed_thing.above).name == "air" then
-					minetest.set_node(pointed_thing.above, {name = mod_prefix .. ingot_name .."_1"})
+					minetest.set_node(pointed_thing.above, {name = node_name .."1"})
 					if not (creative and creative.is_enabled_for and creative.is_enabled_for(placer:get_player_name())) then
 						itemstack:take_item()
 					end
@@ -101,7 +107,7 @@ function ingots.register_ingots(ingot_item, texture, is_big)
 						ingots.get_box(is_big, i),
 					},
 				}
-		minetest.register_node(mod_prefix .. ingot_name .. "_" .. i,{
+		minetest.register_node(":" .. node_name .. i,{
 			description = "ingots",
 			drawtype = "mesh",
 			tiles = {texture},
@@ -121,7 +127,7 @@ function ingots.register_ingots(ingot_item, texture, is_big)
                         if minetest.is_protected(pos, puncher:get_player_name()) and not minetest.check_player_privs(puncher, "protection_bypass") then
 			                return
 		                end
-						minetest.set_node(pos, {name = mod_prefix .. ingot_name .."_" .. i - 1, param2 = node.param2})
+						minetest.set_node(pos, {name = node_name .. i - 1, param2 = node.param2})
 						if not (creative and creative.is_enabled_for and creative.is_enabled_for(puncher:get_player_name())) then
 							local stack = ItemStack(ingot_item)
 							puncher:get_inventory():add_item("main", stack)
