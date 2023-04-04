@@ -109,7 +109,7 @@ function ingots.register_ingots(ingot_item, texture, is_big, node_name_override,
 				local player_name = puncher:get_player_name()
 				local wield = puncher:get_wielded_item()
 
-				if minetest.is_protected(pos, player_name)) then
+				if minetest.is_protected(pos, player_name) then
 					return
 				end
 
