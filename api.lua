@@ -68,7 +68,7 @@ function ingots.register_ingots(ingot_item, texture, is_big, node_name_override,
 			local under_name = under_node.name
 			local under_def = minetest.registered_nodes[under_name]
 
-			if under_def._ingot_count and under_def._ingot_count < stack_size then
+			if under_def and under_def._ingot_count and under_def._ingot_count < stack_size then
 				minetest.set_node(pointed_thing.under, {name = node_name .. under_def._ingot_count + 1, param2 = under_node.param2})
 				if not minetest.is_creative_enabled(player_name) then
 					itemstack:take_item()
