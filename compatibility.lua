@@ -39,3 +39,15 @@ end
 if minetest.get_modpath("mcl_nether") then
 		ingots.register_ingots("mcl_nether:netherite_ingot", "ingot_netherite.png")
 end
+
+if minetest.get_modpath("everness") then
+		ingots.register_ingots("everness:pyrite_ingot", "ingot_pyrite.png")
+end
+
+if minetest.get_modpath("pigiron") then
+		ingots.register_ingots("pigiron:iron_ingot", "ingot_pig_iron.png")
+end
+
+if minetest.get_modpath("nether") then
+		ingots.register_ingots("nether:nether_ingot", "ingot_nether.png")
+end
